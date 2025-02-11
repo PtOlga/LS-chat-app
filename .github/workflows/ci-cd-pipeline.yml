@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Set up environment variables
+      run: |
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+        echo "LANGCHAIN_API_KEY=${{ secrets.LANGCHAIN_API_KEY }}" >> $GITHUB_ENV
+        echo "LANGCHAIN_TRACING_V2=${{ secrets.LANGCHAIN_TRACING_V2 }}" >> $GITHUB_ENV
+        echo "LANGSMITH_ENDPOINT=${{ secrets.LANGSMITH_ENDPOINT }}" >> $GITHUB_ENV
+        echo "LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}" >> $GITHUB_ENV
+        echo "USER_AGENT=${{ secrets.USER_AGENT }}" >> $GITHUB_ENV
+
+    - name: Run your script
+      run: |
+        python app.py
+      env:
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        LANGCHAIN_TRACING_V2: ${{ secrets.LANGCHAIN_TRACING_V2 }}
+        LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
+        LANGSMITH_PROJECT: ${{ secrets.LANGSMITH_PROJECT }}
+        USER_AGENT: ${{ secrets.USER_AGENT }}
