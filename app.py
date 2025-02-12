@@ -63,42 +63,48 @@ if not OPENAI_API_KEY :
     st.stop()
 
 # Настройка LLM
-llm = ChatGroq(
-    model_name="llama-3.3-70b-versatile",
-    temperature=0.6,
-    api_key=GROQ_API_KEY
-)
+try:
+    llm = ChatGroq(
+        model_name="llama-3.3-70b-versatile",
+        temperature=0.6,
+        api_key=GROQ_API_KEY
+    )
+    print("[DEBUG] LLM успешно инициализирован")
+except Exception as e:
+    print(f"[ERROR] Ошибка инициализации LLM: {e}")
 
 # Настройка эмбеддингов
 embeddings_model = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large-instruct")
+print("[DEBUG] Модель эмбеддингов загружена")
 
 # Функция загрузки только англоязычного контента
 def load_english_pages(urls):
     english_docs = []
-    
     for url in urls:
         if not any(lang in url for lang in ["/ru", "/ar", "/es", "/ch"]):  
             try:
                 loader = WebBaseLoader(url)
                 documents = loader.load()
-                if documents:  # Проверяем, что документы не пустые
+                if documents:
                     english_docs.extend(documents)
+                    print(f"[DEBUG] Загружен контент с {url}")
             except RequestException as e:
-                st.error(f"Ошибка при загрузке страницы {url}: {e}")
-    
+                print(f"[ERROR] Ошибка загрузки страницы {url}: {e}")
     return english_docs
 
 # Пример URL, где английские страницы без префиксов
-urls = ["https://status.law/about", "https://status.law/ru/about", "https://status.law/ar/contact"]
+urls = ["https://status.law/about", "https://status.law/", "https://status.law/contact"]
 documents = load_english_pages(urls)
 
 # Разбиваем на фрагменты
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
 chunks = text_splitter.split_documents(documents)
+print(f"[DEBUG] Разбито на {len(chunks)} фрагментов")
 
 # Создание векторного хранилища
 vector_store = InMemoryVectorStore.from_documents(chunks, embeddings_model)
 retriever = vector_store.as_retriever()
+print("[DEBUG] Векторное хранилище создано")
 
 # Промпт для бота
 template = """
@@ -128,16 +134,18 @@ st.write("Этот бот отвечает на юридические вопр�
 user_input = st.text_input("Введите ваш вопрос:")
 if st.button("Отправить"):
     if user_input:
-        # Создание цепочки обработки запроса
-        chain = (
-            RunnableLambda(lambda x: {"context": retriever.get_relevant_documents(x["question"])})
-            | prompt
-            | llm
-            | StrOutputParser()
-        )
-        # Запуск цепочки
-        response = chain.invoke({"question": user_input})
-        # Добавляем в историю сообщений
-        message_history.append({"question": user_input, "answer": response})
-        # Выводим ответ
-        st.write(response)
+        print(f"[DEBUG] Получен вопрос: {user_input}")
+        try:
+            chain = (
+                RunnableLambda(lambda x: {"context": retriever.get_relevant_documents(x["question"])})
+                | prompt
+                | llm
+                | StrOutputParser()
+            )
+            response = chain.invoke({"question": user_input})
+            message_history.append({"question": user_input, "answer": response})
+            st.write(response)
+            print("[DEBUG] Ответ успешно получен и отправлен пользователю")
+        except Exception as e:
+            st.error(f"Ошибка при обработке запроса: {e}")
+            print(f"[ERROR] Ошибка при обработке запроса: {e}")
