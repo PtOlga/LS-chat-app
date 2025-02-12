@@ -1,6 +1,6 @@
 ---
 title: LS Chat App
-emoji: ⚡
+emoji: 🔍
 colorFrom: blue
 colorTo: blue
 sdk: streamlit
@@ -9,4 +9,6 @@ app_file: app.py
 pinned: false
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+# LS Chat App
+
+It is a chat app built using Streamlit that allows users to interact with an AI model to communicate.
