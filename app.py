@@ -52,10 +52,16 @@ print("[DEBUG] Модель эмбеддингов загружена")
 
 # Список страниц для анализа (вручную перечислены)
 urls = [
+    "https://status.law",
     "https://status.law/about",
-    "https://status.law/services",
-    "https://status.law/team",
-    "https://status.law/blog",
+    "https://status.law/cross-border-banking-legal-issues",
+    "https://status.law/challenging-sanctions",
+    "https://status.law/contact",   
+    "https://status.law/reputation-protection",   
+    "https://status.law/practice-areas", 
+    "https://status.law/interpol-red-notice-removal", 
+    "https://status.law/international-prosecution-protection", 
+    "https://status.law/extradition-defense",
     "https://status.law/faq"
 ]
 
