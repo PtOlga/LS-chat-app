@@ -11,4 +11,4 @@ pinned: false
 
 # LS Chat App
 
-It is a chat app built using Streamlit that allows users to interact with an AI model to communicate.
+It is a chat app built using Streamlit that allows users to interact with an AI model to communicate about www.Status.law
