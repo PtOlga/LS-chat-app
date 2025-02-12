@@ -134,18 +134,25 @@ st.write("Этот бот отвечает на юридические вопр�
 user_input = st.text_input("Введите ваш вопрос:")
 if st.button("Отправить"):
     if user_input:
-        print(f"[DEBUG] Получен вопрос: {user_input}")
-        try:
-            chain = (
-                RunnableLambda(lambda x: {"context": retriever.get_relevant_documents(x["question"])})
-                | prompt
-                | llm
-                | StrOutputParser()
-            )
-            response = chain.invoke({"question": user_input})
-            message_history.append({"question": user_input, "answer": response})
-            st.write(response)
-            print("[DEBUG] Ответ успешно получен и отправлен пользователю")
-        except Exception as e:
-            st.error(f"Ошибка при обработке запроса: {e}")
-            print(f"[ERROR] Ошибка при обработке запроса: {e}")
+        # Получаем релевантные документы из ретривера
+        retrieved_docs = retriever.get_relevant_documents(user_input)
+        
+        # Формируем текстовый контекст из документов
+        context_text = "\n\n".join([doc.page_content for doc in retrieved_docs])
+
+        # Создание цепочки обработки запроса
+        chain = (
+            RunnableLambda(lambda x: {"context": context_text, "question": x["question"]}) 
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+
+        # Запуск цепочки
+        response = chain.invoke({"question": user_input, "context": context_text})
+
+        # Добавляем в историю сообщений
+        message_history.append({"question": user_input, "answer": response})
+
+        # Выводим ответ
+        st.write(response)
